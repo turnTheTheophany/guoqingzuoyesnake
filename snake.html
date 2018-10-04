@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+		*{
+			margin:0;
+			padding:0;
+		}
+		</style>
+	</head>
+	<body>
+		<script src="../js/jquery-1.11.0.js" type="text/javascript"></script>
+		
+
+		
+		<!--<script type="text/javascript">
+			$(function(){
+				$("div").css({
+					"width":"20px",
+					"height":"20px",
+					"background":"red",
+					"position":"relative"
+				});
+				
+				var time1 = setInterval(moveX,1000)
+				$(document).keydown(function(e){
+					console.log(e.which)
+					if(e.which == 40){clearInterval(time1);time1 = setInterval(moveY,1000);}
+					if(e.which == 39){clearInterval(time1);time1 = setInterval(moveX,1000);}				
+					if(e.which == 38){clearInterval(time1);time1 = setInterval(move_Y,1000);}				
+					if(e.which == 37){clearInterval(time1);time1 = setInterval(move_X,1000);}				
+				});
+				function Box(){
+					this.create = document.createElement("div");	
+				}
+				Box.prototype.show = function(bgcolor){
+					var x = Math.floor((document.body.clientX-20)*Math.random()/20)*20;
+					var y = Math.floor((document.body.clientY-20)*Math.random()/20)*20;
+				   document.body.appendChild(this.create);
+				    
+				}
+				var box = new Box();
+				box.show('blue');
+				
+				
+				
+				function moveX(){
+					$("div").each(function(){
+						$(this).css({'left':$(this).offset().left+20})
+					})				
+				}
+				function move_X(){
+					$("div").each(function(){
+						$(this).css({'left':$(this).offset().left-20})
+					})				
+				}				
+				function moveY(){
+					$("div").each(function(){
+						$(this).css({'top':$(this).offset().top+20})
+					})					
+				}
+				function move_Y(){
+					$("div").each(function(){
+						$(this).css({'top':$(this).offset().top-20})
+					})					
+				}				
+			})			
+		</script>-->
+		
+		<script type="text/javascript">
+//			var map;//地图类对象；
+			var snake; //蛇类对象
+			var food; //食物类对象；
+			var timer; //定时器对象；
+			var sum = 0; //分数；
+			//地图类
+			function Food(){
+				this.width = 20;
+				this.height = 20;
+				this.backgroundColor = "green";
+				this.position = 'absolute';
+				this._food = null;
+				
+				this.show = function(){
+					if(this._food ==null){
+						this._food = document.createElement('div');
+						this._food.style.width = this.width + 'px';
+						this._food.style.height = this.height + 'px';
+						this._food.style.backgroundColor = this.backgroundColor;
+//						while(this._food.style.backgroundColor.length<7){
+//							var n = Math.floor(Math.random()*17)
+//							this._food.style.backgroundColor+=this.backgroundColor[n];
+//						}
+						this._food.style.position = this.position;
+						document.body.appendChild(this._food);
+					}
+					//如果有直接改变位置
+					this.x = Math.floor((1300-20)*Math.random()/20)*20;
+					this.y = Math.floor((600-20)*Math.random()/20)*20;
+					this._food.style.left = this.x + 'px';
+					this._food.style.top = this.y + 'px';
+					
+				}
+			}
+			
+			function Snake(){
+				this.width = 20;
+				this.height = 20;
+				this.position = 'absolute';
+				this.direct = '';
+				//所有蛇节的全部信息
+				this.body = [[3,2,'red',null],[2,2,'yellow',null],[1,2,'blue',null]];
+				
+				this.setDirect = function(code){
+					switch(code){
+						case 37:
+							this.direct = 'left';
+						break;
+						case 38:
+							this.direct = 'up';
+						break;
+						case 39:
+							this.direct = 'right';
+						break;
+						case 40:
+							this.direct = 'down';
+						break;
+					}
+				};
+				
+				this.show = function(){
+					for(var i = 0; i < this.body.length; i++){
+						if(this.body[i][3] == null){
+							this.body[i][3] = document.createElement('div');
+							this.body[i][3].style.width = this.width+ 'px';
+							this.body[i][3].style.height = this.height + 'px';
+							this.body[i][3].style.position = this.position;
+							this.body[i][3].style.backgroundColor = this.body[i][2];
+							document.body.appendChild(this.body[i][3]);
+						}
+						this.body[i][3].style.left = this.body[i][0]*this.width + 'px';
+						this.body[i][3].style.top = this.body[i][1]*this.height + 'px';
+					}
+				};
+				
+				this.move = function(){
+					var lastIndex = this.body.length-1;
+					for(var i = this.body.length-1; i >0; i--){
+						this.body[i][0] = this.body[i-1][0];
+						this.body[i][1] = this.body[i-1][1];
+					}
+					switch(this.direct){
+						case 'right':
+							this.body[0][0] = this.body[0][0] +1;
+						break;
+						case 'down':
+							this.body[0][1] = this.body[0][1] +1;
+						break;
+						case 'left':
+							this.body[0][0] = this.body[0][0] -1;
+						break;
+						case 'up':
+							this.body[0][1] = this.body[0][1] -1;
+						break;
+						default:
+						        return;
+					}
+					
+					if(this.body[0][1]*20 == food.y && this.body[0][0]*20 == food.x){
+						var x = this.body[lastIndex][0];
+						var y = this.body[lastIndex][1];
+						this.body.push([x,y,'blue',null]);
+						food.show();
+					}
+					for(var i = 1; i < this.body.length; i++){
+						if(this.body[0][0] == this.body[i][0] && this.body[0][1] == this.body[i][1]){
+							alert('吃到自己死');
+							clearTimeout(timer);
+							return;
+						}
+					}
+					this.show();
+				}
+			}
+			
+			window.onload = function(){
+				food = new Food();
+				food.show();
+				
+				snake = new Snake();
+				snake.show();
+				timer = setInterval('snake.move()',200);
+				
+				document.onkeydown = function(){
+					var code;
+					if(window.event){
+						code = window.event.keyCode;
+					}else{
+						code = event.keyCode;
+					}
+					snake.setDirect(code);
+				}
+			}
+		</script>
+	</body>
+</html>
